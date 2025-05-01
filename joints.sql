@@ -1,88 +1,123 @@
 -- start joinings
--- Using Common Table Expressions (CTE)
--- A CTE allows you to define a subquery block that can be referenced within the main query. 
--- It is particularly useful for recursive queries or queries that require referencing a higher level
--- this is something we will look at in the next lesson/
+-- Joins
 
--- Let's take a look at the basics of writing a CTE:
+-- joins allow you to combine 2 tables together (or more) if they have a common column.
+-- doesn't mean they need the same column name, but the data in it are the same and can be used to join the tables together
+-- there are several joins we will look at today, inner joins, outer joins, and self joins
 
 
--- First, CTEs start using a "With" Keyword. Now we get to name this CTE anything we want
--- Then we say as and within the parenthesis we build our subquery/table we want
-WITH CTE_Example AS 
-(
-SELECT gender, SUM(salary), MIN(salary), MAX(salary), COUNT(salary), AVG(salary)
-FROM employee_demographics dem
-JOIN employee_salary sal
-	ON dem.employee_id = sal.employee_id
-GROUP BY gender
-)
--- directly after using it we can query the CTE
+-- here are the first 2 tables - let's see what columns and data in the rows we have in common that we can join on
 SELECT *
-FROM CTE_Example;
+FROM employee_demographics;
 
-
--- Now if I come down here, it won't work because it's not using the same syntax
 SELECT *
-FROM CTE_Example;
+FROM employee_salary;
 
+-- let's start with an inner join -- inner joins return rows that are the same in both columns
 
-
--- Now we can use the columns within this CTE to do calculations on this data that
--- we couldn't have done without it.
-
-WITH CTE_Example AS 
-(
-SELECT gender, SUM(salary), MIN(salary), MAX(salary), COUNT(salary)
-FROM employee_demographics dem
-JOIN employee_salary sal
-	ON dem.employee_id = sal.employee_id
-GROUP BY gender
-)
--- notice here I have to use back ticks to specify the table names  - without them it doesn't work
-SELECT gender, ROUND(AVG(`SUM(salary)`/`COUNT(salary)`),2)
-FROM CTE_Example
-GROUP BY gender;
-
-
-
--- we also have the ability to create multiple CTEs with just one With Expression
-
-WITH CTE_Example AS 
-(
-SELECT employee_id, gender, birth_date
-FROM employee_demographics dem
-WHERE birth_date > '1985-01-01'
-), -- just have to separate by using a comma
-CTE_Example2 AS 
-(
-SELECT employee_id, salary
-FROM parks_and_recreation.employee_salary
-WHERE salary >= 50000
-)
--- Now if we change this a bit, we can join these two CTEs together
+-- since we have the same columns we need to specify which table they're coming from
 SELECT *
-FROM CTE_Example cte1
-LEFT JOIN CTE_Example2 cte2
-	ON cte1. employee_id = cte2. employee_id;
+FROM employee_demographics
+JOIN employee_salary
+	ON employee_demographics.employee_id = employee_salary.employee_id;
 
+-- notice Ron Swanson isn't in the results? This is because he doesn't have an employee id in the demographics table. He refused to give his birth date or age or gender
 
--- the last thing I wanted to show you is that we can actually make our life easier by renaming the columns in the CTE
--- let's take our very first CTE we made. We had to use tick marks because of the column names
-
--- we can rename them like this
-WITH CTE_Example (gender, sum_salary, min_salary, max_salary, count_salary) AS 
-(
-SELECT gender, SUM(salary), MIN(salary), MAX(salary), COUNT(salary)
+-- use aliasing!
+SELECT *
 FROM employee_demographics dem
-JOIN employee_salary sal
+INNER JOIN employee_salary sal
+	ON dem.employee_id = sal.employee_id;
+
+
+-- OUTER JOINS
+
+-- for outer joins we have a left and a right join
+-- a left join will take everything from the left table even if there is no match in the join, but will only return matches from the right table
+-- the exact opposite is true for a right join
+
+SELECT *
+FROM employee_salary sal
+LEFT JOIN employee_demographics dem
+	ON dem.employee_id = sal.employee_id;
+
+-- so you'll notice we have everything from the left table or the salary table. Even though there is no match to ron swanson. 
+-- Since there is not match on the right table it's just all Nulls
+
+-- if we just switch this to a right join it basically just looks like an inner join
+-- that's because we are taking everything from the demographics table and only matches from the left or salary table. Since they have all the matches
+-- it looks kind of like an inner join
+SELECT *
+FROM employee_salary sal
+RIGHT JOIN employee_demographics dem
+	ON dem.employee_id = sal.employee_id;
+
+
+
+-- Self Join
+
+-- a self join is where you tie a table to itself
+
+SELECT *
+FROM employee_salary;
+
+-- what we could do is a secret santa so the person with the higher ID is the person's secret santa
+
+
+SELECT *
+FROM employee_salary emp1
+JOIN employee_salary emp2
+	ON emp1.employee_id = emp2.employee_id
+    ;
+
+-- now let's change it to give them their secret santa
+SELECT *
+FROM employee_salary emp1
+JOIN employee_salary emp2
+	ON emp1.employee_id + 1  = emp2.employee_id
+    ;
+
+
+
+SELECT emp1.employee_id as emp_santa, emp1.first_name as santa_first_name, emp1.last_name as santa_last_name, emp2.employee_id, emp2.first_name, emp2.last_name
+FROM employee_salary emp1
+JOIN employee_salary emp2
+	ON emp1.employee_id + 1  = emp2.employee_id
+    ;
+
+-- So leslie is Ron's secret santa and so on -- Mark Brandanowitz didn't get a secret santa, but he doesn't deserve one because he broke Ann's heart so it's all good
+
+
+
+
+
+
+-- Joining multiple tables
+
+-- now we have on other table we can join - let's take a look at it
+SELECT * 
+FROM parks_and_recreation.parks_departments;
+
+
+SELECT *
+FROM employee_demographics dem
+INNER JOIN employee_salary sal
 	ON dem.employee_id = sal.employee_id
-GROUP BY gender
-)
--- notice here I have to use back ticks to specify the table names  - without them it doesn't work
-SELECT gender, ROUND(AVG(sum_salary/count_salary),2)
-FROM CTE_Example
-GROUP BY gender;
+JOIN parks_departments dept
+	ON dept.department_id = sal.dept_id;
+
+-- now notice when we did that, since it's an inner join it got rid of andy because he wasn't a part of any department
+
+-- if we do a left join we would still include him because we are taking everything from the left table which is the salary table in this instance
+SELECT *
+FROM employee_demographics dem
+INNER JOIN employee_salary sal
+	ON dem.employee_id = sal.employee_id
+LEFT JOIN parks_departments dept
+	ON dept.department_id = sal.dept_id;
+
+
+
 
 
 
