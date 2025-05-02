@@ -40,7 +40,7 @@ VALUES
 -- Cynthia
 (3, 70000.00, '2022-03-01', NULL, NULL);
 
-
+-- Query: Most Recent Salary for Each Employee
 
 SELECT 
     e.EmployeeID,
