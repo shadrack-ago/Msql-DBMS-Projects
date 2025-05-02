@@ -40,3 +40,16 @@ VALUES
 -- Cynthia
 (3, 70000.00, '2022-03-01', NULL, NULL);
 
+
+
+SELECT 
+    e.EmployeeID,
+    e.FirstName,
+    e.LastName,
+    e.Department,
+    s.Salary,
+    s.ValidFrom
+FROM Employee e
+JOIN EmployeeSalaryHistory s ON e.EmployeeID = s.EmployeeID
+WHERE s.ValidTo IS NULL
+ORDER BY s.Salary DESC;
