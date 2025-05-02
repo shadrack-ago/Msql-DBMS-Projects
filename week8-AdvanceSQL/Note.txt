@@ -1,0 +1,27 @@
+Optimizing Database Design: Beyond Basic Normalization 🚀🔬
+
+Hey data wizards! 🧙‍♂️ Ready to take your database skills to the next level? Let's explore some advanced techniques that'll make your databases sing! 🎵
+
+Temporal Data Modeling: Time-Traveling with Your Data ⏳🕰️
+
+Imagine if your database could remember the past and predict the future. That's what temporal data modeling is all about!
+
+Key Concepts:
+
+Valid Time: When data is true in the real world 🌍
+Transaction Time: When data is recorded in the database 💾
+Bitemporal Modeling: Tracking both valid and transaction time 🔄
+
+Example: Employee Salary History
+
+
+CREATE TABLE EmployeeSalaryHistory (
+    EmployeeID INT,
+    Salary DECIMAL(10,2),
+    ValidFrom DATE,
+    ValidTo DATE,
+    TransactionStart TIMESTAMP,
+    TransactionEnd TIMESTAMP
+);
+
+This table lets you track an employee's salary over time, including when changes were made. Time travel, but for data! 🚀
